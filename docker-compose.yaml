@@ -1,0 +1,134 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./apps/api-gateway/Dockerfile
+    command: npm run start:dev api-gateway
+    depends_on:
+      - rabbitmq
+    environment:
+      - PORT=8080
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '8080:8080'
+
+  questions:
+    build:
+      context: .
+      dockerfile: ./apps/questions/Dockerfile
+    command: npm run start:dev questions
+    depends_on:
+      - rabbitmq
+      - postgres-questions-write
+      - postgres-questions-read
+    environment:
+      - DB_WRITE_HOST=postgres-questions-write
+      - DB_WRITE_PORT=5432
+      - DB_WRITE_USERNAME=postgres
+      - DB_WRITE_PASSWORD=postgres
+      - DB_WRITE_NAME=questions_write_db
+      - DB_READ_HOST=postgres-questions-read
+      - DB_READ_PORT=5432
+      - DB_READ_USERNAME=postgres
+      - DB_READ_PASSWORD=postgres
+      - DB_READ_NAME=questions_read_db
+      - PORT=9001
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '9001:9001'
+
+  answers:
+    build:
+      context: .
+      dockerfile: ./apps/answers/Dockerfile
+    command: npm run start:dev answers
+    depends_on:
+      - rabbitmq
+      - postgres-answers-write
+      - postgres-answers-read
+    environment:
+      - DB_WRITE_HOST=postgres-answers-write
+      - DB_WRITE_PORT=5432
+      - DB_WRITE_USERNAME=postgres
+      - DB_WRITE_PASSWORD=postgres
+      - DB_WRITE_NAME=answers_write_db
+      - DB_READ_HOST=postgres-answers-read
+      - DB_READ_PORT=5432
+      - DB_READ_USERNAME=postgres
+      - DB_READ_PASSWORD=postgres
+      - DB_READ_NAME=answers_read_db
+      - PORT=9002
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '9002:9002'
+
+  postgres-questions-write:
+    image: postgres:15-alpine
+    container_name: postgres-questions-write
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=questions_write_db
+    volumes:
+      - postgres-questions-write-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  postgres-questions-read:
+    image: postgres:15-alpine
+    container_name: postgres-questions-read
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=questions_read_db
+    volumes:
+      - postgres-questions-read-data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  postgres-answers-write:
+    image: postgres:15-alpine
+    container_name: postgres-answers-write
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=answers_write_db
+    volumes:
+      - postgres-answers-write-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  postgres-answers-read:
+    image: postgres:15-alpine
+    container_name: postgres-answers-read
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=answers_read_db
+    volumes:
+      - postgres-answers-read-data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  postgres-questions-write-data:
+  postgres-questions-read-data:
+  postgres-answers-write-data:
+  postgres-answers-read-data:
+  rabbitmq-data:
