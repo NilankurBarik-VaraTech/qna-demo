@@ -1,5 +1,5 @@
-import { Controller, Inject } from '@nestjs/common';
-import { EventPattern, MessagePattern, ClientProxy } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { EventPattern, MessagePattern } from '@nestjs/microservices';
 import { CommandBus, QueryBus, EventBus } from '@nestjs/cqrs';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { CreateQuestionCommand } from './commands/impl/create-question.command';
@@ -13,8 +13,6 @@ export class QuestionsController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
     private readonly eventBus: EventBus,
-    @Inject('RABBITMQ_SERVICE')
-    private readonly rabbitClient: ClientProxy,
   ) {}
 
   @EventPattern('question_created')

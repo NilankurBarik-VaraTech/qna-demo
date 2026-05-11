@@ -9,7 +9,6 @@ import { CreateAnswerHandler } from './commands/handlers/create-answer.handler';
 import { DeleteAnswerHandler } from './commands/handlers/delete-answer.handler';
 import { DeleteAnswersByQuestionHandler } from './commands/handlers/delete-answers-by-question.handler';
 import { GetAllAnswersHandler } from './queries/handlers/get-all-answers.handler';
-import { AnswerCreatedHandler } from './events/handlers/answer-created.handler';
 import { AnswerCreatedProjection } from './events/handlers/answer-created.projection';
 import { AnswerDeletedProjection } from './events/handlers/answer-deleted.projection';
 import { AnswersQuestionDeletedProjection } from './events/handlers/question-deleted.projection';
@@ -21,7 +20,6 @@ const CommandHandlers = [
   DeleteAnswersByQuestionHandler,
 ];
 const QueryHandlers = [GetAllAnswersHandler];
-const EventHandlers = [AnswerCreatedHandler];
 const Projections = [
   AnswerCreatedProjection,
   AnswerDeletedProjection,
@@ -74,12 +72,6 @@ const Sagas = [AnswerSaga];
     ]),
   ],
   controllers: [AnswersController],
-  providers: [
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-    ...Projections,
-    ...Sagas,
-  ],
+  providers: [...CommandHandlers, ...QueryHandlers, ...Projections, ...Sagas],
 })
 export class AnswersModule {}

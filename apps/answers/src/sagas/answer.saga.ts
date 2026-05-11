@@ -4,7 +4,9 @@ import { ClientProxy } from '@nestjs/microservices';
 import { EMPTY, firstValueFrom, Observable } from 'rxjs';
 import { delay, map, mergeMap } from 'rxjs/operators';
 import { AnswerCreatedEvent } from '../events/impl/answer-created.event';
+import { AnswerRejectedExternalEvent } from '../events/impl/answer-rejected-external.event';
 import { QuestionDeletedExternalEvent } from '../events/impl/question-deleted-external.event';
+import { DeleteAnswerCommand } from '../commands/impl/delete-answer.command';
 import { DeleteAnswersByQuestionCommand } from '../commands/impl/delete-answers-by-question.command';
 
 @Injectable()
@@ -41,9 +43,20 @@ export class AnswerSaga {
   };
 
   @Saga()
-  questionDeletedCascade = (
-    events$: Observable<any>,
-  ): Observable<ICommand> => {
+  answerRejectedCleanup = (events$: Observable<any>): Observable<ICommand> => {
+    return events$.pipe(
+      ofType(AnswerRejectedExternalEvent),
+      map((event) => {
+        console.log(
+          `[AnswerSaga] Answer ${event.answerId} rejected by questions service: ${event.reason}`,
+        );
+        return new DeleteAnswerCommand(event.answerId);
+      }),
+    );
+  };
+
+  @Saga()
+  questionDeletedCascade = (events$: Observable<any>): Observable<ICommand> => {
     return events$.pipe(
       ofType(QuestionDeletedExternalEvent),
       map((event) => {

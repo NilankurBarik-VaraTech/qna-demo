@@ -3,8 +3,8 @@ import { ICommand, ofType, Saga, QueryBus } from '@nestjs/cqrs';
 import { Observable, EMPTY, firstValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { ClientProxy } from '@nestjs/microservices';
-import { QuestionCreatedEvent } from '../events/impl/question-created.event';
 import { AnswerSubmittedExternalEvent } from '../events/impl/answer-submitted-external.event';
+import { QuestionDeletedEvent } from '../events/impl/question-deleted.event';
 import { CheckQuestionExistsQuery } from '../queries/impl/check-question-exists.query';
 
 @Injectable()
@@ -14,18 +14,6 @@ export class QuestionSaga {
     private readonly rabbitClient: ClientProxy,
     private readonly queryBus: QueryBus,
   ) {}
-
-  @Saga()
-  questionCreated = (events$: Observable<any>): Observable<ICommand> => {
-    return events$.pipe(
-      ofType(QuestionCreatedEvent),
-      mergeMap((event) => {
-        console.log(`[QuestionSaga] Question created: ${event.id}`);
-        // Can trigger additional commands here if needed
-        return EMPTY;
-      }),
-    );
-  };
 
   @Saga()
   answerSubmittedValidation = (
@@ -66,6 +54,30 @@ export class QuestionSaga {
         return EMPTY;
       }),
       mergeMap((result) => result),
+    );
+  };
+
+  @Saga()
+  questionDeletedCascade = (events$: Observable<any>): Observable<ICommand> => {
+    return events$.pipe(
+      ofType(QuestionDeletedEvent),
+      mergeMap((event) => {
+        console.log(
+          `[QuestionSaga] Publishing question ${event.questionId} deletion for answer cascade`,
+        );
+
+        void firstValueFrom(
+          this.rabbitClient.emit('question_deleted', {
+            questionId: event.questionId,
+          }),
+        ).catch((error: Error) => {
+          console.log(
+            `[QuestionSaga] Failed to publish question ${event.questionId} deletion: ${error.message}`,
+          );
+        });
+
+        return EMPTY;
+      }),
     );
   };
 }

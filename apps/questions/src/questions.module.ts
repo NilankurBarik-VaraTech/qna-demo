@@ -9,18 +9,12 @@ import { CreateQuestionHandler } from './commands/handlers/create-question.handl
 import { DeleteQuestionHandler } from './commands/handlers/delete-question.handler';
 import { GetAllQuestionsHandler } from './queries/handlers/get-all-questions.handler';
 import { CheckQuestionExistsHandler } from './queries/handlers/check-question-exists.handler';
-import { QuestionCreatedHandler } from './events/handlers/question-created.handler';
-import { QuestionDeletedHandler } from './events/handlers/question-deleted.handler';
 import { QuestionCreatedProjection } from './events/handlers/question-created.projection';
 import { QuestionDeletedProjection } from './events/handlers/question-deleted.projection';
 import { QuestionSaga } from './sagas/question.saga';
 
 const CommandHandlers = [CreateQuestionHandler, DeleteQuestionHandler];
 const QueryHandlers = [GetAllQuestionsHandler, CheckQuestionExistsHandler];
-const EventHandlers = [
-  QuestionCreatedHandler,
-  QuestionDeletedHandler,
-];
 const Projections = [QuestionCreatedProjection, QuestionDeletedProjection];
 const Sagas = [QuestionSaga];
 
@@ -69,12 +63,6 @@ const Sagas = [QuestionSaga];
     ]),
   ],
   controllers: [QuestionsController],
-  providers: [
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-    ...Projections,
-    ...Sagas,
-  ],
+  providers: [...CommandHandlers, ...QueryHandlers, ...Projections, ...Sagas],
 })
 export class QuestionsModule {}
