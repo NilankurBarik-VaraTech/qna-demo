@@ -1,18 +1,19 @@
-import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern } from '@nestjs/microservices';
-import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
+import { Controller, Inject } from '@nestjs/common';
+import { EventPattern, MessagePattern, ClientProxy } from '@nestjs/microservices';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { CreateQuestionCommand } from './commands/impl/create-question.command';
 import { DeleteQuestionCommand } from './commands/impl/delete-question.command';
 import { GetAllQuestionsQuery } from './queries/impl/get-all-questions.query';
-import { AnswerSubmittedEvent } from './events/impl/answer-submitted.event';
+import { CheckQuestionExistsQuery } from './queries/impl/check-question-exists.query';
 
 @Controller()
 export class QuestionsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-    private readonly eventBus: EventBus,
+    @Inject('RABBITMQ_SERVICE')
+    private readonly rabbitClient: ClientProxy,
   ) {}
 
   @EventPattern('question_created')
@@ -39,8 +40,27 @@ export class QuestionsController {
     answerId: number;
     questionId: number;
   }) {
-    this.eventBus.publish(
-      new AnswerSubmittedEvent(payload.answerId, payload.questionId),
+    const exists = await this.queryBus.execute(
+      new CheckQuestionExistsQuery(payload.questionId),
     );
+
+    if (exists) {
+      console.log(
+        `[QuestionsController] Answer ${payload.answerId} accepted for question ${payload.questionId}`,
+      );
+      return;
+    }
+
+    const reason = `Question with ID ${payload.questionId} does not exist`;
+
+    console.log(
+      `[QuestionsController] Answer ${payload.answerId} rejected: ${reason}`,
+    );
+
+    this.rabbitClient.emit('answer_rejected', {
+      answerId: payload.answerId,
+      questionId: payload.questionId,
+      reason,
+    });
   }
 }

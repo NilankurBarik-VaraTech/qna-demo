@@ -11,7 +11,6 @@ import { GetAllQuestionsHandler } from './queries/handlers/get-all-questions.han
 import { CheckQuestionExistsHandler } from './queries/handlers/check-question-exists.handler';
 import { QuestionCreatedHandler } from './events/handlers/question-created.handler';
 import { QuestionDeletedHandler } from './events/handlers/question-deleted.handler';
-import { AnswerSubmittedHandler } from './events/handlers/answer-submitted.handler';
 import { QuestionCreatedProjection } from './events/handlers/question-created.projection';
 import { QuestionDeletedProjection } from './events/handlers/question-deleted.projection';
 import { QuestionSaga } from './sagas/question.saga';
@@ -21,7 +20,6 @@ const QueryHandlers = [GetAllQuestionsHandler, CheckQuestionExistsHandler];
 const EventHandlers = [
   QuestionCreatedHandler,
   QuestionDeletedHandler,
-  AnswerSubmittedHandler,
 ];
 const Projections = [QuestionCreatedProjection, QuestionDeletedProjection];
 const Sagas = [QuestionSaga];
