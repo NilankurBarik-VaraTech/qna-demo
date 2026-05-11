@@ -1,17 +1,18 @@
 import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, MessagePattern, ClientProxy } from '@nestjs/microservices';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus, EventBus } from '@nestjs/cqrs';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { CreateQuestionCommand } from './commands/impl/create-question.command';
 import { DeleteQuestionCommand } from './commands/impl/delete-question.command';
 import { GetAllQuestionsQuery } from './queries/impl/get-all-questions.query';
-import { CheckQuestionExistsQuery } from './queries/impl/check-question-exists.query';
+import { AnswerSubmittedExternalEvent } from './events/impl/answer-submitted-external.event';
 
 @Controller()
 export class QuestionsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly eventBus: EventBus,
     @Inject('RABBITMQ_SERVICE')
     private readonly rabbitClient: ClientProxy,
   ) {}
@@ -36,31 +37,16 @@ export class QuestionsController {
   }
 
   @EventPattern('answer_submitted')
-  async validateSubmittedAnswer(payload: {
+  handleAnswerSubmitted(payload: {
     answerId: number;
     questionId: number;
-  }) {
-    const exists = await this.queryBus.execute(
-      new CheckQuestionExistsQuery(payload.questionId),
-    );
-
-    if (exists) {
-      console.log(
-        `[QuestionsController] Answer ${payload.answerId} accepted for question ${payload.questionId}`,
-      );
-      return;
-    }
-
-    const reason = `Question with ID ${payload.questionId} does not exist`;
-
+  }): void {
     console.log(
-      `[QuestionsController] Answer ${payload.answerId} rejected: ${reason}`,
+      `[QuestionsController] Received answer_submitted for answer ${payload.answerId}`,
     );
-
-    this.rabbitClient.emit('answer_rejected', {
-      answerId: payload.answerId,
-      questionId: payload.questionId,
-      reason,
-    });
+    // Publish to event bus - saga will handle validation
+    this.eventBus.publish(
+      new AnswerSubmittedExternalEvent(payload.answerId, payload.questionId),
+    );
   }
 }

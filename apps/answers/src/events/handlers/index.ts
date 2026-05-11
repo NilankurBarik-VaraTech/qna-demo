@@ -1,5 +1,4 @@
 export * from './answer-created.handler';
-export * from './question-deleted-external.handler';
 export * from './answer-created.projection';
 export * from './answer-deleted.projection';
 export * from './question-deleted.projection';

@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ICommand, ofType, Saga } from '@nestjs/cqrs';
 import { ClientProxy } from '@nestjs/microservices';
 import { EMPTY, firstValueFrom, Observable } from 'rxjs';
-import { delay, mergeMap } from 'rxjs/operators';
+import { delay, map, mergeMap } from 'rxjs/operators';
 import { AnswerCreatedEvent } from '../events/impl/answer-created.event';
+import { QuestionDeletedExternalEvent } from '../events/impl/question-deleted-external.event';
+import { DeleteAnswersByQuestionCommand } from '../commands/impl/delete-answers-by-question.command';
 
 @Injectable()
 export class AnswerSaga {
@@ -34,6 +36,21 @@ export class AnswerSaga {
         });
 
         return EMPTY;
+      }),
+    );
+  };
+
+  @Saga()
+  questionDeletedCascade = (
+    events$: Observable<any>,
+  ): Observable<ICommand> => {
+    return events$.pipe(
+      ofType(QuestionDeletedExternalEvent),
+      map((event) => {
+        console.log(
+          `[AnswerSaga] Question ${event.questionId} deleted, cascading to delete answers`,
+        );
+        return new DeleteAnswersByQuestionCommand(event.questionId);
       }),
     );
   };
