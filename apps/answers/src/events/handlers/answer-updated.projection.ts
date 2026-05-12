@@ -13,9 +13,9 @@ export class AnswerUpdatedProjection implements IEventHandler<AnswerUpdatedEvent
 
   async handle(event: AnswerUpdatedEvent) {
     const { id, content } = event;
-    
+
     await this.answerReadRepo.update(id, { content });
-    
+
     console.log(`[AnswerUpdatedProjection] Updated answer ${id} in read model`);
   }
 }

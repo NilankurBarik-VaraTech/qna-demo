@@ -14,7 +14,7 @@ import { GetQuestionByIdHandler } from './queries/handlers/get-question-by-id.ha
 import { QuestionCreatedProjection } from './events/handlers/question-created.projection';
 import { QuestionDeletedProjection } from './events/handlers/question-deleted.projection';
 import { QuestionUpdatedProjection } from './events/handlers/question-updated.projection';
-import { AnswerSubmittedValidationHandler } from './events/handlers/answer-submitted-validation.handler';
+import { AnswerCreatedValidationHandler } from './events/handlers/answer-created-validation.handler';
 
 const CommandHandlers = [
   CreateQuestionHandler,
@@ -27,7 +27,7 @@ const QueryHandlers = [
   GetQuestionByIdHandler,
 ];
 const EventHandlers = [
-  AnswerSubmittedValidationHandler,
+  AnswerCreatedValidationHandler,
   QuestionCreatedProjection,
   QuestionDeletedProjection,
   QuestionUpdatedProjection,

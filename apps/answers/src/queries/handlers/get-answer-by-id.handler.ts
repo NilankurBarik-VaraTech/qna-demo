@@ -14,9 +14,9 @@ export class GetAnswerByIdHandler implements IQueryHandler<GetAnswerByIdQuery> {
 
   async execute(query: GetAnswerByIdQuery): Promise<AnswerReadModel> {
     const { id } = query;
-    
+
     const answer = await this.answerReadRepo.findOneBy({ id });
-    
+
     if (!answer) {
       throw new NotFoundException(`Answer with ID ${id} not found`);
     }

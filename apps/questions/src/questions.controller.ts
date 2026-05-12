@@ -8,7 +8,7 @@ import { DeleteQuestionCommand } from './commands/impl/delete-question.command';
 import { UpdateQuestionCommand } from './commands/impl/update-question.command';
 import { GetAllQuestionsQuery } from './queries/impl/get-all-questions.query';
 import { GetQuestionByIdQuery } from './queries/impl/get-question-by-id.query';
-import { AnswerSubmittedExternalEvent } from './events/impl/answer-submitted-external.event';
+import { AnswerCreatedExternalEvent } from './events/impl/answer-created-external.event';
 
 @Controller()
 export class QuestionsController {
@@ -49,17 +49,13 @@ export class QuestionsController {
     return this.commandBus.execute(new DeleteQuestionCommand(payload.id));
   }
 
-  @EventPattern('answer_submitted')
-  handleAnswerSubmitted(payload: {
-    answerId: number;
-    questionId: number;
-  }): void {
+  @EventPattern('answer_created')
+  handleAnswerCreated(payload: { answerId: number; questionId: number }): void {
     console.log(
-      `[QuestionsController] Received answer_submitted for answer ${payload.answerId}`,
+      `[QuestionsController] Received answer_created for answer ${payload.answerId}`,
     );
-    // Publish to event bus - saga will handle validation
     this.eventBus.publish(
-      new AnswerSubmittedExternalEvent(payload.answerId, payload.questionId),
+      new AnswerCreatedExternalEvent(payload.answerId, payload.questionId),
     );
   }
 }

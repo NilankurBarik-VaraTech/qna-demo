@@ -2,20 +2,20 @@ import { Inject } from '@nestjs/common';
 import { EventsHandler, IEventHandler, QueryBus } from '@nestjs/cqrs';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AnswerSubmittedExternalEvent } from '../impl/answer-submitted-external.event';
+import { AnswerCreatedExternalEvent } from '../impl/answer-created-external.event';
 import { CheckQuestionExistsQuery } from '../../queries/impl/check-question-exists.query';
 
-@EventsHandler(AnswerSubmittedExternalEvent)
-export class AnswerSubmittedValidationHandler implements IEventHandler<AnswerSubmittedExternalEvent> {
+@EventsHandler(AnswerCreatedExternalEvent)
+export class AnswerCreatedValidationHandler implements IEventHandler<AnswerCreatedExternalEvent> {
   constructor(
     @Inject('RABBITMQ_SERVICE')
     private readonly rabbitClient: ClientProxy,
     private readonly queryBus: QueryBus,
   ) {}
 
-  async handle(event: AnswerSubmittedExternalEvent): Promise<void> {
+  async handle(event: AnswerCreatedExternalEvent): Promise<void> {
     console.log(
-      `[AnswerSubmittedValidationHandler] Validating answer ${event.answerId} for question ${event.questionId}`,
+      `[AnswerCreatedValidationHandler] Validating answer ${event.answerId} for question ${event.questionId}`,
     );
 
     const exists = await this.queryBus.execute<
@@ -24,17 +24,20 @@ export class AnswerSubmittedValidationHandler implements IEventHandler<AnswerSub
     >(new CheckQuestionExistsQuery(event.questionId));
 
     if (exists) {
+      await firstValueFrom(
+        this.rabbitClient.emit('answer_approved', {
+          answerId: event.answerId,
+          questionId: event.questionId,
+        }),
+      );
+
       console.log(
-        `[AnswerSubmittedValidationHandler] Answer ${event.answerId} accepted for question ${event.questionId}`,
+        `[AnswerCreatedValidationHandler] Answer ${event.answerId} approved for question ${event.questionId}`,
       );
       return;
     }
 
     const reason = `Question with ID ${event.questionId} does not exist`;
-
-    console.log(
-      `[AnswerSubmittedValidationHandler] Answer ${event.answerId} rejected: ${reason}`,
-    );
 
     await firstValueFrom(
       this.rabbitClient.emit('answer_rejected', {
@@ -42,6 +45,10 @@ export class AnswerSubmittedValidationHandler implements IEventHandler<AnswerSub
         questionId: event.questionId,
         reason,
       }),
+    );
+
+    console.log(
+      `[AnswerCreatedValidationHandler] Answer ${event.answerId} rejected: ${reason}`,
     );
   }
 }

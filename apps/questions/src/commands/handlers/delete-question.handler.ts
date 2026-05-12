@@ -20,9 +20,9 @@ export class DeleteQuestionHandler implements ICommandHandler<DeleteQuestionComm
 
   async execute(command: DeleteQuestionCommand): Promise<void> {
     const { id } = command;
-    
+
     const question = await this.questionRepo.findOne({ where: { id } });
-    
+
     if (!question) {
       throw new NotFoundException(`Question with ID ${id} not found`);
     }

@@ -1,7 +1,10 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { UpdateAnswerCommand } from '../impl/update-answer.command';
 import { Answer } from '../../entities/answer.entity';
 import { AnswerUpdatedEvent } from '../../events/impl/answer-updated.event';
@@ -16,9 +19,9 @@ export class UpdateAnswerHandler implements ICommandHandler<UpdateAnswerCommand>
 
   async execute(command: UpdateAnswerCommand): Promise<Answer> {
     const { id, content } = command;
-    
+
     const answer = await this.answerRepo.findOneBy({ id });
-    
+
     if (!answer) {
       throw new NotFoundException(`Answer with ID ${id} not found`);
     }
@@ -31,8 +34,10 @@ export class UpdateAnswerHandler implements ICommandHandler<UpdateAnswerCommand>
       throw new InternalServerErrorException();
     }
 
-    this.eventBus.publish(new AnswerUpdatedEvent(id, answer.questionId, content));
-    
+    this.eventBus.publish(
+      new AnswerUpdatedEvent(id, answer.questionId, content),
+    );
+
     return answer;
   }
 }

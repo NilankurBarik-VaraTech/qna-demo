@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from './entities/question.entity';
@@ -15,7 +19,8 @@ export class QuestionsService {
     const exists = await this.questionRepo.findOneBy(question);
     if (exists) {
       throw new ConflictException('Question title already exists');
-    } try {
+    }
+    try {
       await this.questionRepo.save(newQuestion);
     } catch (error) {
       throw new InternalServerErrorException();
@@ -24,7 +29,7 @@ export class QuestionsService {
   }
   async getAllQuestions(page: number = 1, limit: number = 3) {
     const skip = (page - 1) * limit;
-    
+
     const [data, total] = await this.questionRepo.findAndCount({
       skip,
       take: limit,

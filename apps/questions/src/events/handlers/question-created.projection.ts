@@ -12,17 +12,21 @@ export class QuestionCreatedProjection implements IEventHandler<QuestionCreatedE
   ) {}
 
   async handle(event: QuestionCreatedEvent) {
-    console.log(`[QuestionCreatedProjection] Projecting question ${event.id} to read database`);
-    
+    console.log(
+      `[QuestionCreatedProjection] Projecting question ${event.id} to read database`,
+    );
+
     const readModel = this.questionReadRepo.create({
       id: event.id,
       title: event.title,
       description: event.description,
-      answerCount: 0,
+      // answerCount: 0,
     });
 
     await this.questionReadRepo.save(readModel);
-    
-    console.log(`[QuestionCreatedProjection] Question ${event.id} projected to read database`);
+
+    console.log(
+      `[QuestionCreatedProjection] Question ${event.id} projected to read database`,
+    );
   }
 }

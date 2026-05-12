@@ -14,7 +14,7 @@ export class GetAllAnswersHandler implements IQueryHandler<GetAllAnswersQuery> {
   async execute(query: GetAllAnswersQuery) {
     const { questionId, page, limit } = query;
     const skip = (page - 1) * limit;
-    
+
     const [data, total] = await this.answerReadRepo.findAndCount({
       where: { questionId },
       skip,

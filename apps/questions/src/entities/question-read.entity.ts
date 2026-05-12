@@ -1,4 +1,10 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('question_read_model')
 export class QuestionReadModel {
@@ -11,8 +17,8 @@ export class QuestionReadModel {
   @Column()
   description: string;
 
-  @Column({ default: 0 })
-  answerCount: number;
+  // @Column({ default: 0 })
+  // answerCount?: number;
 
   @CreateDateColumn()
   createdAt: Date;

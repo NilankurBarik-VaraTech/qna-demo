@@ -14,9 +14,9 @@ export class GetQuestionByIdHandler implements IQueryHandler<GetQuestionByIdQuer
 
   async execute(query: GetQuestionByIdQuery): Promise<QuestionReadModel> {
     const { id } = query;
-    
+
     const question = await this.questionReadRepo.findOneBy({ id });
-    
+
     if (!question) {
       throw new NotFoundException(`Question with ID ${id} not found`);
     }

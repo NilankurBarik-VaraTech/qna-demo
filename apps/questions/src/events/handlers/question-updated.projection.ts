@@ -13,9 +13,11 @@ export class QuestionUpdatedProjection implements IEventHandler<QuestionUpdatedE
 
   async handle(event: QuestionUpdatedEvent) {
     const { id, title, description } = event;
-    
+
     await this.questionReadRepo.update(id, { title, description });
-    
-    console.log(`[QuestionUpdatedProjection] Updated question ${id} in read model`);
+
+    console.log(
+      `[QuestionUpdatedProjection] Updated question ${id} in read model`,
+    );
   }
 }

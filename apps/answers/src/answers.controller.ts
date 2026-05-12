@@ -5,6 +5,7 @@ import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { GetAllAnswersQuery } from './queries/impl/get-all-answers.query';
 import { GetAnswerByIdQuery } from './queries/impl/get-answer-by-id.query';
+import { AnswerApprovedExternalEvent } from './events/impl/answer-approved-external.event';
 import { AnswerRejectedExternalEvent } from './events/impl/answer-rejected-external.event';
 import { QuestionDeletedExternalEvent } from './events/impl/question-deleted-external.event';
 import { CreateAnswerCommand } from './commands/impl/create-answer.command';
@@ -47,7 +48,9 @@ export class AnswersController {
   }
 
   @EventPattern('answer_update')
-  async updateAnswer(payload: { id: number } & UpdateAnswerDto): Promise<Answer> {
+  async updateAnswer(
+    payload: { id: number } & UpdateAnswerDto,
+  ): Promise<Answer> {
     return this.commandBus.execute(
       new UpdateAnswerCommand(payload.id, payload.content),
     );
@@ -81,6 +84,19 @@ export class AnswersController {
         payload.questionId,
         payload.reason,
       ),
+    );
+  }
+
+  @EventPattern('answer_approved')
+  handleAnswerApproved(payload: {
+    answerId: number;
+    questionId: number;
+  }): void {
+    console.log(
+      `[AnswersController] Answer ${payload.answerId} approved for question ${payload.questionId}`,
+    );
+    this.eventBus.publish(
+      new AnswerApprovedExternalEvent(payload.answerId, payload.questionId),
     );
   }
 }
