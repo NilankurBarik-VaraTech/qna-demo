@@ -8,24 +8,29 @@ import { AnswerReadModel } from './entities/answer-read.entity';
 import { CreateAnswerHandler } from './commands/handlers/create-answer.handler';
 import { DeleteAnswerHandler } from './commands/handlers/delete-answer.handler';
 import { DeleteAnswersByQuestionHandler } from './commands/handlers/delete-answers-by-question.handler';
+import { UpdateAnswerHandler } from './commands/handlers/update-answer.handler';
 import { GetAllAnswersHandler } from './queries/handlers/get-all-answers.handler';
+import { GetAnswerByIdHandler } from './queries/handlers/get-answer-by-id.handler';
 import { AnswerCreatedProjection } from './events/handlers/answer-created.projection';
 import { AnswerDeletedProjection } from './events/handlers/answer-deleted.projection';
-import { AnswersQuestionDeletedProjection } from './events/handlers/question-deleted.projection';
-import { AnswerSaga } from './sagas/answer.saga';
+import { AnswerUpdatedProjection } from './events/handlers/answer-updated.projection';
+import { AnswerRejectedCleanupHandler } from './events/handlers/answer-rejected-cleanup.handler';
+import { QuestionDeletedCascadeHandler } from './events/handlers/question-deleted-cascade.handler';
 
 const CommandHandlers = [
   CreateAnswerHandler,
   DeleteAnswerHandler,
   DeleteAnswersByQuestionHandler,
+  UpdateAnswerHandler,
 ];
-const QueryHandlers = [GetAllAnswersHandler];
-const Projections = [
+const QueryHandlers = [GetAllAnswersHandler, GetAnswerByIdHandler];
+const EventHandlers = [
   AnswerCreatedProjection,
   AnswerDeletedProjection,
-  AnswersQuestionDeletedProjection,
+  AnswerRejectedCleanupHandler,
+  AnswerUpdatedProjection,
+  QuestionDeletedCascadeHandler,
 ];
-const Sagas = [AnswerSaga];
 
 @Module({
   imports: [
@@ -72,6 +77,6 @@ const Sagas = [AnswerSaga];
     ]),
   ],
   controllers: [AnswersController],
-  providers: [...CommandHandlers, ...QueryHandlers, ...Projections, ...Sagas],
+  providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers],
 })
 export class AnswersModule {}

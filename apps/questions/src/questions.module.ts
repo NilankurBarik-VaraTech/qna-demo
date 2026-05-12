@@ -7,16 +7,31 @@ import { Question } from './entities/question.entity';
 import { QuestionReadModel } from './entities/question-read.entity';
 import { CreateQuestionHandler } from './commands/handlers/create-question.handler';
 import { DeleteQuestionHandler } from './commands/handlers/delete-question.handler';
+import { UpdateQuestionHandler } from './commands/handlers/update-question.handler';
 import { GetAllQuestionsHandler } from './queries/handlers/get-all-questions.handler';
 import { CheckQuestionExistsHandler } from './queries/handlers/check-question-exists.handler';
+import { GetQuestionByIdHandler } from './queries/handlers/get-question-by-id.handler';
 import { QuestionCreatedProjection } from './events/handlers/question-created.projection';
 import { QuestionDeletedProjection } from './events/handlers/question-deleted.projection';
-import { QuestionSaga } from './sagas/question.saga';
+import { QuestionUpdatedProjection } from './events/handlers/question-updated.projection';
+import { AnswerSubmittedValidationHandler } from './events/handlers/answer-submitted-validation.handler';
 
-const CommandHandlers = [CreateQuestionHandler, DeleteQuestionHandler];
-const QueryHandlers = [GetAllQuestionsHandler, CheckQuestionExistsHandler];
-const Projections = [QuestionCreatedProjection, QuestionDeletedProjection];
-const Sagas = [QuestionSaga];
+const CommandHandlers = [
+  CreateQuestionHandler,
+  DeleteQuestionHandler,
+  UpdateQuestionHandler,
+];
+const QueryHandlers = [
+  GetAllQuestionsHandler,
+  CheckQuestionExistsHandler,
+  GetQuestionByIdHandler,
+];
+const EventHandlers = [
+  AnswerSubmittedValidationHandler,
+  QuestionCreatedProjection,
+  QuestionDeletedProjection,
+  QuestionUpdatedProjection,
+];
 
 @Module({
   imports: [
@@ -63,6 +78,6 @@ const Sagas = [QuestionSaga];
     ]),
   ],
   controllers: [QuestionsController],
-  providers: [...CommandHandlers, ...QueryHandlers, ...Projections, ...Sagas],
+  providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers],
 })
 export class QuestionsModule {}

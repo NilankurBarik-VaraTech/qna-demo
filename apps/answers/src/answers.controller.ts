@@ -2,10 +2,14 @@ import { Controller } from '@nestjs/common';
 import { EventPattern, MessagePattern } from '@nestjs/microservices';
 import { QueryBus, EventBus, CommandBus } from '@nestjs/cqrs';
 import { CreateAnswerDto } from './dto/create-answer.dto';
+import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { GetAllAnswersQuery } from './queries/impl/get-all-answers.query';
+import { GetAnswerByIdQuery } from './queries/impl/get-answer-by-id.query';
 import { AnswerRejectedExternalEvent } from './events/impl/answer-rejected-external.event';
 import { QuestionDeletedExternalEvent } from './events/impl/question-deleted-external.event';
 import { CreateAnswerCommand } from './commands/impl/create-answer.command';
+import { UpdateAnswerCommand } from './commands/impl/update-answer.command';
+import { DeleteAnswerCommand } from './commands/impl/delete-answer.command';
 import { Answer } from './entities/answer.entity';
 
 type CreateAnswerMessage = CreateAnswerDto & {
@@ -35,6 +39,23 @@ export class AnswersController {
   }): Promise<unknown> {
     const { id, page, limit } = payload;
     return this.queryBus.execute(new GetAllAnswersQuery(id, page, limit));
+  }
+
+  @MessagePattern({ cmd: 'get-answer-by-id' })
+  async getAnswerById(payload: { id: number }): Promise<unknown> {
+    return this.queryBus.execute(new GetAnswerByIdQuery(payload.id));
+  }
+
+  @EventPattern('answer_update')
+  async updateAnswer(payload: { id: number } & UpdateAnswerDto): Promise<Answer> {
+    return this.commandBus.execute(
+      new UpdateAnswerCommand(payload.id, payload.content),
+    );
+  }
+
+  @EventPattern('answer_delete')
+  async deleteAnswer(payload: { id: number }): Promise<void> {
+    return this.commandBus.execute(new DeleteAnswerCommand(payload.id));
   }
 
   @EventPattern('question_deleted')
